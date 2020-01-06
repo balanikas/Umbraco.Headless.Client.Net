@@ -42,6 +42,8 @@ namespace Umbraco.Headless.Client.Samples.Web
             configuration.ContentModelTypes.Add<Frontpage>();
             configuration.ContentModelTypes.Add<Textpage>();
 
+            configuration.ElementModelTypes.Add<TextAndImage>();
+
             services.AddUmbracoHeadlessContentDelivery(configuration);
 
             services.AddUmbracoHeadlessWebEngine();
