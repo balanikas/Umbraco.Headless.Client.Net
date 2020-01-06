@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Http;
+using Umbraco.Headless.Client.Net.Collections;
 using Umbraco.Headless.Client.Net.Configuration;
+using Umbraco.Headless.Client.Net.Delivery.Models;
 using Umbraco.Headless.Client.Net.Security;
 
 namespace Umbraco.Headless.Client.Net.Delivery
@@ -52,7 +54,7 @@ namespace Umbraco.Headless.Client.Net.Delivery
                 BaseAddress = new Uri(Constants.Urls.BaseCdnUrl)
             };
 
-            Content = new ContentDelivery(configuration, httpClient);
+            Content = new ContentDelivery(configuration, httpClient, GetContentModelTypes(configuration));
             Media = new MediaDelivery(configuration, httpClient);
         }
 
@@ -68,7 +70,7 @@ namespace Umbraco.Headless.Client.Net.Delivery
                 DefaultRequestHeaders = { { Constants.Headers.ApiKey, configuration.Token } }
             };
 
-            Content = new ContentDelivery(configuration, httpClient);
+            Content = new ContentDelivery(configuration, httpClient, GetContentModelTypes(configuration));
             Media = new MediaDelivery(configuration, httpClient);
         }
 
@@ -82,7 +84,21 @@ namespace Umbraco.Headless.Client.Net.Delivery
         /// <param name="httpClient">Reference to the <see cref="HttpClient"/></param>
         public ContentDeliveryService(IHeadlessConfiguration configuration, HttpClient httpClient)
         {
-            Content = new ContentDelivery(configuration, httpClient);
+            Content = new ContentDelivery(configuration, httpClient, GetContentModelTypes(configuration));
+            Media = new MediaDelivery(configuration, httpClient);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ContentDeliveryService class
+        /// </summary>
+        /// <remarks>
+        /// When passing in your own HttpClient you are responsible for setting the authentication headers
+        /// </remarks>
+        /// <param name="configuration">Reference to the <see cref="IStronglyTypedHeadlessConfiguration"/></param>
+        /// <param name="httpClient">Reference to the <see cref="HttpClient"/></param>
+        public ContentDeliveryService(IStronglyTypedHeadlessConfiguration configuration, HttpClient httpClient)
+        {
+            Content = new ContentDelivery(configuration, httpClient, configuration.ContentModelTypes);
             Media = new MediaDelivery(configuration, httpClient);
         }
 
@@ -95,5 +111,12 @@ namespace Umbraco.Headless.Client.Net.Delivery
         /// Gets the Media part of the Content Delivery API
         /// </summary>
         public IMediaDelivery Media { get; }
+
+        private ITypeList<IContent> GetContentModelTypes(IHeadlessConfiguration configuration)
+        {
+            if (configuration is IStronglyTypedHeadlessConfiguration stronglyTypedHeadlessConfiguration)
+                return stronglyTypedHeadlessConfiguration.ContentModelTypes;
+            return new TypeList<IContent>();
+        }
     }
 }
